@@ -1,9 +1,9 @@
 package com.heda.BookMark.domain.user.service;
 
-import com.heda.BookMark.domain.user.dto.UserDto;
+
 import com.heda.BookMark.domain.user.dto.UserJoinRequestDto;
-import com.heda.BookMark.domain.user.entity.LoginType;
-import com.heda.BookMark.domain.user.entity.Role;
+import com.heda.BookMark.domain.user.dto.UserResponseDto;
+import com.heda.BookMark.domain.user.dto.UserUpdateRequest;
 import com.heda.BookMark.domain.user.entity.UserEntity;
 import com.heda.BookMark.domain.user.mapper.UserMapper;
 import com.heda.BookMark.domain.user.repository.UserRepository;
@@ -13,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,34 +40,34 @@ public class UserService {
     }
 //
     // 전체 조회 -
-    public List<UserDto> findAll() {
+    public List<UserResponseDto> findAll() {
 
         return userRepository.findAll().stream()
-                .map(UserDto::fromEntity)
+                .map(UserMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     // 단건 조회
-    public UserDto findById(Long id) {
+    public UserResponseDto findById(Long id) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new CustomErrorHandler(ErrorCode.USER_NOT_FOUND)); // 없으면 에러
 
-        return UserDto.fromEntity(user); // 있으면 DTO로 변환해서 반환
+        return UserMapper.toResponse(user);
     }
 
     // 수정
     @Transactional
-    public UserDto update(Long id, UserDto userDto) {
+    public UserResponseDto update(Long id, UserUpdateRequest dto) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new CustomErrorHandler(ErrorCode.USER_NOT_FOUND));
 
-        String encodedPassword = userDto.getPassword() != null
-                ? passwordEncoder.encode(userDto.getPassword())
+        String encodedPassword = dto.getPassword() != null
+                ? passwordEncoder.encode(dto.getPassword())
                 : null;
 
-        user.update(userDto.getName(), encodedPassword);
+        user.update(dto.getName(), encodedPassword);
 
-        return UserDto.fromEntity(user);
+        return UserMapper.toResponse(user);
     }
 
     // 삭제 (소프트 딜리트)

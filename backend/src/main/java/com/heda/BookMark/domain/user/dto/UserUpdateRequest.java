@@ -1,17 +1,21 @@
 package com.heda.BookMark.domain.user.dto;
 
-import com.heda.BookMark.domain.user.entity.LoginType;
-import com.heda.BookMark.domain.user.entity.Role;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 
+@Getter
 public class UserUpdateRequest {
 
+    @NotBlank
+    @Size(max = 30)
     private String name;
-    private String email;
+
+    @NotBlank
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[~!@#$%^&*()+|=])[A-Za-z\\d~!@#$%^&*()+|=]{8,16}$")
+    private String password;
 
 
 
