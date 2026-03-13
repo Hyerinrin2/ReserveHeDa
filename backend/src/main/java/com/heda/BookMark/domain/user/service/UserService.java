@@ -1,9 +1,11 @@
 package com.heda.BookMark.domain.user.service;
 
 import com.heda.BookMark.domain.user.dto.UserDto;
+import com.heda.BookMark.domain.user.dto.UserJoinRequestDto;
 import com.heda.BookMark.domain.user.entity.LoginType;
 import com.heda.BookMark.domain.user.entity.Role;
 import com.heda.BookMark.domain.user.entity.UserEntity;
+import com.heda.BookMark.domain.user.mapper.UserMapper;
 import com.heda.BookMark.domain.user.repository.UserRepository;
 import com.heda.BookMark.global.error.CustomErrorHandler;
 import com.heda.BookMark.global.error.ErrorCode;
@@ -28,37 +30,17 @@ public class UserService {
     *   가입 전 이미 가입한 이력이 있는지 확인하고 가입 여부 확인
     *   로컬 회원가입인지, 소셜 로그인인지 구분필요
     */
-    public UserDto join(UserDto userdto) {
-        String email;
-        String displayname;
+    public void join(UserJoinRequestDto dto) {
+        // 1. 중복 체크
+        validDuplicate(dto.getEmail());
 
-        validDuplicate(userdto.getEmail(), userdto.getName()); //1. 이메일 중복체크
+        // 2. 비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(dto.getPassword());
 
-
-        // 필수 입력 항목 입력 완료 체크
-        if(userdto.getEmail()!=null&& userdto.getName()!=null){
-            email = userdto.getEmail();
-            displayname = userdto.getName();
-        } else {
-            throw new CustomErrorHandler(ErrorCode.INVALID_INPUT); // 필요입력 항목 입력하라고 에러를 던지고 싶음...
-        }
-
-
-        String encodePassword = passwordEncoder.encode(userdto.getPassword()); //비밀번호 암호화
-
-        userdto.setEmail(email);
-        userdto.setName(displayname);
-        userdto.setPassword(encodePassword);
-        userdto.setCreatedAt(LocalDateTime.now());
-        userdto.setLoginType(LoginType.LOCAL);
-        userdto.setRole(Role.USER);
-
-
-        UserEntity saved = userRepository.save(userdto.toEntity());
-
-        return UserDto.fromEntity(saved);
+        // 3. Mapper로 Entity 변환 후 저장
+        userRepository.save(UserMapper.toEntity(dto, encodedPassword));
     }
-
+//
     // 전체 조회 -
     public List<UserDto> findAll() {
 
@@ -104,7 +86,7 @@ public class UserService {
     }
 
     //중복 체크 메소드
-    private void validDuplicate(String email, String name) {
+    private void validDuplicate(String email) {
         if (userRepository.existsByEmail(email)) {
             throw new CustomErrorHandler(ErrorCode.DUPLICATED_EMAIL);
         }

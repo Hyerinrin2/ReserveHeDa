@@ -1,7 +1,9 @@
 package com.heda.BookMark.domain.user.controller;
 
 import com.heda.BookMark.domain.user.dto.UserDto;
+import com.heda.BookMark.domain.user.dto.UserJoinRequestDto;
 import com.heda.BookMark.domain.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +19,12 @@ public class UserController {
     private final UserService userService;
 
 
+
     //회원가입 - 요청 본문을 받아서 응답 본문을 http 201로 리턴
     @PostMapping("/api/users/join")
-    public ResponseEntity<UserDto> join(@RequestBody UserDto userdto) {
-        UserDto saved = userService.join(userdto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    public ResponseEntity<Void> join(@Valid @RequestBody UserJoinRequestDto dto)  {
+        userService.join(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     //로그인 -
